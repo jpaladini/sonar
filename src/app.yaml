@@ -1,0 +1,9 @@
+command: ["python", "serve.py"]
+
+env:
+  - name: SONAR_CATALOG
+    value: "workspace"
+  - name: SONAR_SCHEMA
+    value: "sonar_gold"
+  - name: SONAR_WAREHOUSE_ID
+    value: "93c5f9f3549e0e4a"
