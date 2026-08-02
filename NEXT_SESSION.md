@@ -23,7 +23,7 @@
 on `CannedData` (fixtures identical to the design seed) and reports
 `"provider": "canned", "delta": {"available": false}` in `/api/health`.
 `DeltaData` is implemented (statement-execution against warehouse
-`93c5f9f3549e0e4a`, env-configured catalog/schema, default
+`8d0b8b0c7401cc20`, env-configured catalog/schema, default
 `workspace.sonar_gold`) and will activate automatically once the probe query
 succeeds. Conversations/saved items are per-user **in-memory** (reset on app
 restart) behind the `StateStore` seam.

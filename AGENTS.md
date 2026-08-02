@@ -15,9 +15,12 @@ runtime only — never port it).
 
 ## Dev environment facts (verified)
 
-- Workspace: `https://dbc-49fa4800-f5f0.cloud.databricks.com` (Free Edition)
-- Catalog: `workspace`; SQL warehouse id: `93c5f9f3549e0e4a`
-- App limit ≤3; `ado-companion` uses one slot, `sonar` is the second
+- Workspace: `https://dbc-d5235f17-9353.cloud.databricks.com` (Free Edition,
+  account `xployt@msn.com`; warehouse: Serverless Starter). The original
+  workspace (`dbc-49fa4800-f5f0`, id 4201007868433203) is billing-restricted
+  and its resource-gatekeeper denies app creation
+  (`DENY_NEW_AND_EXISTING_RESOURCES / ABUSE`) — do not deploy there.
+- Catalog: `workspace`; SQL warehouse id: `8d0b8b0c7401cc20`
 - The gold pipeline (`sonar.gold.calls_labeled`) does **not** exist in dev —
   the BFF probes Delta once at startup and serves canned fixtures when
   unavailable (`/api/health` → `"provider": "canned"`). This is expected.
@@ -75,7 +78,7 @@ Fonts) — needed in sandboxes where Chromium can't reach the proxy. Compare
 Manual validate (no deploy):
 
 ```bash
-DATABRICKS_HOST=https://dbc-49fa4800-f5f0.cloud.databricks.com \
+DATABRICKS_HOST=https://dbc-d5235f17-9353.cloud.databricks.com \
 DATABRICKS_TOKEN=<pat> databricks bundle validate -t dev
 ```
 
@@ -84,7 +87,7 @@ DATABRICKS_TOKEN=<pat> databricks bundle validate -t dev
 ```bash
 # App status + URL
 curl -s -H "Authorization: Bearer $PAT" \
-  https://dbc-49fa4800-f5f0.cloud.databricks.com/api/2.0/apps/sonar | jq '.app_status, .url'
+  https://dbc-d5235f17-9353.cloud.databricks.com/api/2.0/apps/sonar | jq '.app_status, .url'
 
 # Health through the app (requires browser auth; from CI use the app URL + OAuth)
 curl -s <app-url>/api/health
