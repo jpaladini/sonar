@@ -1,7 +1,7 @@
 # Deploys the Sonar bundle to the dev target on every merge to dev.
 #
 # Pipeline variables (set on the pipeline in ADO):
-#   DATABRICKS_HOST  — https://dbc-49fa4800-f5f0.cloud.databricks.com
+#   DATABRICKS_HOST  — https://dbc-d5235f17-9353.cloud.databricks.com
 #   DATABRICKS_TOKEN — PAT for the workspace (mark secret)
 trigger:
   branches:

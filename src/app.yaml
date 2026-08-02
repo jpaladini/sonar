@@ -6,4 +6,4 @@ env:
   - name: SONAR_SCHEMA
     value: "sonar_gold"
   - name: SONAR_WAREHOUSE_ID
-    value: "93c5f9f3549e0e4a"
+    value: "8d0b8b0c7401cc20"
