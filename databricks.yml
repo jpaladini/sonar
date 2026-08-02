@@ -1,0 +1,26 @@
+# Databricks Asset Bundle for the Sonar app.
+#
+# Deploys src/ (FastAPI BFF + committed SPA build) as a Databricks App.
+# CI deploys target `dev` on merge to the dev branch; `prod` is reserved.
+bundle:
+  name: sonar
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-49fa4800-f5f0.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-49fa4800-f5f0.cloud.databricks.com
+      root_path: /Workspace/Shared/.bundle/prod/${bundle.name}
+
+resources:
+  apps:
+    sonar:
+      name: sonar
+      description: "Sonar — call center intelligence chat over labeled call data"
+      source_code_path: ./src

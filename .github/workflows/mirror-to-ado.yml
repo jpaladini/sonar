@@ -1,0 +1,35 @@
+name: Mirror to ADO
+
+# Force-pushes every branch to the Azure DevOps repo so Azure Pipelines can
+# build/deploy from there. Requires repo secrets:
+#   ADO_REPO_URL — https://dev.azure.com/jpaladini85/home/_git/sonar
+#   ADO_PAT      — Azure DevOps PAT with Code read/write on that repo
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch: {}
+
+concurrency:
+  group: mirror-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Force-push branch to ADO
+        env:
+          ADO_REPO_URL: ${{ secrets.ADO_REPO_URL }}
+          ADO_PAT: ${{ secrets.ADO_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ADO_REPO_URL}" ] || [ -z "${ADO_PAT}" ]; then
+            echo "ADO_REPO_URL / ADO_PAT secrets not set; skipping mirror."
+            exit 0
+          fi
+          git remote add ado "https://azdo:${ADO_PAT}@${ADO_REPO_URL#https://}"
+          git push ado --force "HEAD:refs/heads/${GITHUB_REF_NAME}"

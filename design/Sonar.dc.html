@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#09090b;--panel:#0d0d10;--panel2:#131317;--raise:#17171c;--border:#1e1e24;--border2:#2b2b33;--text:#f2f2f4;--muted:#8e8e98;--faint:#5c5c66;--inv:#ffffff;--invtext:#0a0a0c;--hover:rgba(255,255,255,.05);--good:#6ee7a0;--warn:#eec87e;--bad:#f38585;--track:#1d1d23;}
+html[data-theme="light"]{--bg:#f5f5f6;--panel:#ffffff;--panel2:#f0f0f2;--raise:#e9e9ec;--border:#e4e4e8;--border2:#d3d3da;--text:#16161a;--muted:#6d6d78;--faint:#9d9da6;--inv:#131316;--invtext:#ffffff;--hover:rgba(0,0,0,.045);--good:#1a9e57;--warn:#a5720e;--bad:#c94343;--track:#e6e6ea;}
+html,body{margin:0;padding:0;background:var(--bg);}
+body{font-family:'IBM Plex Sans',sans-serif;color:var(--text);}
+*{box-sizing:border-box;}
+a{color:var(--text);}a:hover{color:var(--muted);}
+input,textarea,button{font-family:'IBM Plex Sans',sans-serif;}
+::selection{background:var(--text);color:var(--bg);}
+*::-webkit-scrollbar{width:8px;height:8px;}
+*::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+*::-webkit-scrollbar-track{background:transparent;}
+@keyframes wave{0%,100%{transform:scaleY(.35);}50%{transform:scaleY(1);}}
+@keyframes blinkdot{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+@keyframes ping{0%{transform:scale(.6);opacity:.9;}100%{transform:scale(2.2);opacity:0;}}
+</style>
+</helmet>
+<div style="display:flex;height:100vh;background:var(--bg);color:var(--text);font-size:13px;overflow:hidden;">
+
+  <!-- ============ LEFT PANE ============ -->
+  <div style="width:256px;min-width:256px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;">
+    <div style="padding:14px 14px 10px;display:flex;align-items:center;gap:9px;">
+      <div style="width:26px;height:26px;border-radius:7px;background:var(--inv);display:flex;align-items:center;justify-content:center;gap:2px;">
+        <div style="width:2.5px;height:6px;background:var(--invtext);border-radius:2px;"></div>
+        <div style="width:2.5px;height:13px;background:var(--invtext);border-radius:2px;"></div>
+        <div style="width:2.5px;height:9px;background:var(--invtext);border-radius:2px;"></div>
+        <div style="width:2.5px;height:15px;background:var(--invtext);border-radius:2px;"></div>
+        <div style="width:2.5px;height:5px;background:var(--invtext);border-radius:2px;"></div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14px;letter-spacing:.04em;">SONAR</div>
+        <div style="font-size:10px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;">Call intelligence</div>
+      </div>
+    </div>
+    <div style="padding:0 12px 10px;">
+      <div onClick="{{ onWorkspace }}" style="display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--panel2);" style-hover="border-color:var(--border2);">
+        <div style="width:16px;height:16px;border-radius:4px;background:var(--raise);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted);">CX</div>
+        <div style="flex:1;font-size:12px;font-weight:500;">{{ workspace }}</div>
+        <div style="color:var(--faint);font-size:10px;">▾</div>
+      </div>
+    </div>
+    <div style="padding:0 12px;display:flex;flex-direction:column;gap:8px;">
+      <div onClick="{{ onNewChat }}" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:8px;background:var(--inv);color:var(--invtext);font-weight:600;font-size:12.5px;cursor:pointer;" style-hover="opacity:.88;">
+        <span style="font-size:14px;line-height:1;">+</span> New conversation
+      </div>
+      <input value="{{ searchQ }}" onChange="{{ onSearch }}" placeholder="Search conversations…" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:12px;outline:none;" style-focus="border-color:var(--border2);">
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px 8px 8px;">
+      <sc-for list="{{ convGroups }}" as="g" hint-placeholder-count="3">
+        <div style="margin-bottom:10px;">
+          <div style="padding:4px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="2">
+            <div onClick="{{ c.onClick }}" style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;background:{{ c.bg }};" style-hover="background:var(--hover);">
+              <div style="width:5px;height:5px;border-radius:50%;background:{{ c.dot }};flex-shrink:0;"></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12.5px;font-weight:{{ c.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.title }}</div>
+                <div style="font-size:10.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.sub }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <div style="border-top:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:9px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--raise);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;">JT</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;">Jordan Tate</div>
+        <div style="font-size:10.5px;color:var(--faint);">QA Director</div>
+      </div>
+      <div onClick="{{ onTheme }}" title="Toggle theme" style="display:flex;align-items:center;gap:4px;padding:4px 7px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:10px;color:var(--muted);" style-hover="border-color:var(--border2);color:var(--text);">
+        <div style="width:7px;height:7px;border-radius:50%;background:{{ themeDot }};"></div>{{ themeLabel }}
+      </div>
+      <div onClick="{{ onSettings }}" title="Settings" style="width:26px;height:26px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5px;cursor:pointer;border:1px solid var(--border);" style-hover="border-color:var(--border2);background:var(--hover);">
+        <div style="width:11px;height:1.5px;background:var(--muted);border-radius:1px;"></div>
+        <div style="width:11px;height:1.5px;background:var(--muted);border-radius:1px;"></div>
+        <div style="width:11px;height:1.5px;background:var(--muted);border-radius:1px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CENTER PANE ============ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);">
+    <div style="height:50px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ convTitle }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);font-size:10.5px;color:var(--muted);">
+        <div style="position:relative;width:6px;height:6px;">
+          <div style="position:absolute;inset:0;border-radius:50%;background:var(--good);"></div>
+          <div style="position:absolute;inset:0;border-radius:50%;background:var(--good);animation:ping 2s ease-out infinite;"></div>
+        </div>
+        Pipeline live · 1,198 calls this week
+      </div>
+      <div onClick="{{ onToggleRight }}" title="Toggle panel" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="border-color:var(--border2);background:var(--hover);">
+        <div style="width:13px;height:11px;border:1.5px solid var(--muted);border-radius:3px;display:flex;justify-content:flex-end;">
+          <div style="width:4px;height:100%;border-left:1.5px solid var(--muted);background:{{ panelFill }};"></div>
+        </div>
+      </div>
+    </div>
+
+    <div ref="{{ msgRef }}" style="flex:1;overflow-y:auto;padding:20px 0;">
+      <div style="max-width:720px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:18px;">
+
+        <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding-top:11vh;display:flex;flex-direction:column;align-items:center;text-align:center;animation:fadeup .4s ease;">
+            <div style="display:flex;align-items:flex-end;gap:4px;height:44px;margin-bottom:22px;">
+              <div style="width:5px;height:44px;background:var(--text);border-radius:3px;animation:wave 1.2s ease-in-out infinite;animation-delay:0s;"></div>
+              <div style="width:5px;height:44px;background:var(--text);border-radius:3px;animation:wave 1.2s ease-in-out infinite;animation-delay:.15s;"></div>
+              <div style="width:5px;height:44px;background:var(--text);border-radius:3px;animation:wave 1.2s ease-in-out infinite;animation-delay:.3s;"></div>
+              <div style="width:5px;height:44px;background:var(--text);border-radius:3px;animation:wave 1.2s ease-in-out infinite;animation-delay:.45s;"></div>
+              <div style="width:5px;height:44px;background:var(--text);border-radius:3px;animation:wave 1.2s ease-in-out infinite;animation-delay:.6s;"></div>
+            </div>
+            <div style="font-size:21px;font-weight:700;margin-bottom:6px;">Ask Sonar about your calls</div>
+            <div style="font-size:13px;color:var(--muted);max-width:420px;line-height:1.5;margin-bottom:24px;">Every call is transcribed, labeled and scored by the pipeline. Ask about drivers, sentiment, agents, or pull raw transcripts.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:560px;">
+              <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="3">
+                <div onClick="{{ s.onClick }}" style="padding:8px 13px;border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--muted);cursor:pointer;background:var(--panel);" style-hover="border-color:var(--border2);color:var(--text);">{{ s.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-for list="{{ messages }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;animation:fadeup .3s ease;">
+            <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+              <div style="align-self:flex-end;max-width:78%;background:var(--panel2);border:1px solid var(--border);padding:9px 14px;border-radius:14px 14px 4px 14px;font-size:13.5px;line-height:1.5;">{{ m.text }}</div>
+            </sc-if>
+            <sc-if value="{{ m.isAssistant }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:11px;">
+                <div style="width:26px;height:26px;min-width:26px;border-radius:7px;background:var(--inv);display:flex;align-items:center;justify-content:center;gap:1.5px;margin-top:2px;">
+                  <div style="width:2px;height:5px;background:var(--invtext);border-radius:1px;"></div>
+                  <div style="width:2px;height:10px;background:var(--invtext);border-radius:1px;"></div>
+                  <div style="width:2px;height:7px;background:var(--invtext);border-radius:1px;"></div>
+                </div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;padding-top:3px;">
+                  <sc-for list="{{ m.blocks }}" as="b" hint-placeholder-count="1">
+                    <div style="display:flex;flex-direction:column;">
+                      <sc-if value="{{ b.isText }}" hint-placeholder-val="{{ true }}">
+                        <div style="font-size:13.5px;line-height:1.62;color:var(--text);white-space:pre-wrap;">{{ b.text }}<sc-if value="{{ b.cursor }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:7px;height:14px;background:var(--text);margin-left:2px;vertical-align:text-bottom;animation:blinkdot 1s infinite;"></span></sc-if></div>
+                      </sc-if>
+                      <sc-if value="{{ b.isBars }}" hint-placeholder-val="{{ false }}">
+                        <div style="border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:14px 16px;">
+                          <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;">{{ b.title }}</div>
+                          <div style="display:flex;flex-direction:column;gap:9px;">
+                            <sc-for list="{{ b.items }}" as="r" hint-placeholder-count="4">
+                              <div style="display:grid;grid-template-columns:130px 1fr 74px;align-items:center;gap:10px;">
+                                <div style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.label }}</div>
+                                <div style="height:7px;background:var(--track);border-radius:4px;overflow:hidden;"><div style="height:100%;border-radius:4px;background:var(--text);width:{{ r.pct }};"></div></div>
+                                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--text);">{{ r.value }}</div>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ b.isTable }}" hint-placeholder-val="{{ false }}">
+                        <div style="border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow-x:auto;">
+                          <div style="min-width:460px;display:grid;grid-template-columns:{{ b.cols }};padding:9px 14px;border-bottom:1px solid var(--border);gap:8px;">
+                            <sc-for list="{{ b.headers }}" as="h" hint-placeholder-count="3">
+                              <div style="font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);">{{ h }}</div>
+                            </sc-for>
+                          </div>
+                          <sc-for list="{{ b.rows }}" as="row" hint-placeholder-count="4">
+                            <div style="min-width:460px;display:grid;grid-template-columns:{{ b.cols }};padding:8px 14px;border-bottom:1px solid var(--border);gap:8px;align-items:center;" style-hover="background:var(--hover);">
+                              <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="3">
+                                <div style="font-size:12.5px;font-family:{{ cell.font }};color:{{ cell.color }};font-weight:{{ cell.weight }};">{{ cell.text }}</div>
+                              </sc-for>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ b.isAgents }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                          <sc-for list="{{ b.items }}" as="a" hint-placeholder-count="4">
+                            <div onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:10px 13px;cursor:pointer;" style-hover="border-color:var(--border2);background:var(--hover);">
+                              <div style="width:30px;height:30px;border-radius:50%;background:var(--raise);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">{{ a.initials }}</div>
+                              <div style="flex:1;">
+                                <div style="font-size:13px;font-weight:600;">{{ a.name }}</div>
+                                <div style="font-size:11px;color:var(--faint);">{{ a.team }}</div>
+                              </div>
+                              <div style="text-align:right;">
+                                <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:{{ a.scoreColor }};">{{ a.score }}</div>
+                                <div style="font-size:10px;color:var(--faint);">{{ a.calls }} calls</div>
+                              </div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ b.isChips }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                          <sc-for list="{{ b.items }}" as="ch" hint-placeholder-count="3">
+                            <div onClick="{{ ch.onClick }}" style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;background:var(--panel);padding:8px 12px;cursor:pointer;" style-hover="border-color:var(--border2);background:var(--hover);">
+                              <div style="display:flex;align-items:flex-end;gap:1.5px;height:12px;">
+                                <div style="width:2px;height:5px;background:var(--muted);border-radius:1px;"></div>
+                                <div style="width:2px;height:11px;background:var(--muted);border-radius:1px;"></div>
+                                <div style="width:2px;height:7px;background:var(--muted);border-radius:1px;"></div>
+                              </div>
+                              <div>
+                                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;">{{ ch.label }}</div>
+                                <div style="font-size:10.5px;color:var(--faint);">{{ ch.sub }}</div>
+                              </div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ thinking }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:11px;animation:fadeup .3s ease;">
+            <div style="width:26px;height:26px;min-width:26px;border-radius:7px;background:var(--inv);display:flex;align-items:center;justify-content:center;gap:1.5px;">
+              <div style="width:2px;height:5px;background:var(--invtext);border-radius:1px;animation:wave 1s ease-in-out infinite;"></div>
+              <div style="width:2px;height:10px;background:var(--invtext);border-radius:1px;animation:wave 1s ease-in-out infinite;animation-delay:.15s;"></div>
+              <div style="width:2px;height:7px;background:var(--invtext);border-radius:1px;animation:wave 1s ease-in-out infinite;animation-delay:.3s;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;padding-top:6px;">
+              <div style="width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blinkdot 1.2s infinite;"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blinkdot 1.2s infinite;animation-delay:.2s;"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blinkdot 1.2s infinite;animation-delay:.4s;"></div>
+              <div style="font-size:11.5px;color:var(--faint);margin-left:5px;">{{ thinkingLabel }}</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="padding:0 24px 18px;">
+      <div style="max-width:720px;margin:0 auto;">
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border2);border-radius:12px;background:var(--panel);padding:6px 6px 6px 16px;" style-focus="border-color:var(--muted);">
+          <input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onKey }}" placeholder="Ask about drivers, sentiment, agents, transcripts…" style="flex:1;border:none;outline:none;background:transparent;color:var(--text);font-size:13.5px;padding:8px 0;">
+          <div onClick="{{ onSend }}" style="width:34px;height:34px;border-radius:9px;background:var(--inv);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="opacity:.85;">
+            <div style="width:0;height:0;border-left:6px solid var(--invtext);border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px;"></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:10.5px;color:var(--faint);margin-top:8px;">Sonar answers from labeled pipeline data · Jul 20–26 window · verify before coaching decisions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RIGHT PANE ============ -->
+  <sc-if value="{{ rightOpen }}" hint-placeholder-val="{{ true }}">
+  <div style="width:clamp(300px,30vw,400px);min-width:300px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;">
+    <div style="display:flex;gap:2px;padding:9px 10px;border-bottom:1px solid var(--border);overflow-x:auto;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+        <div onClick="{{ t.onClick }}" style="padding:6px 11px;border-radius:7px;font-size:12px;font-weight:{{ t.weight }};color:{{ t.color }};background:{{ t.bg }};cursor:pointer;white-space:nowrap;" style-hover="color:var(--text);">{{ t.label }}</div>
+      </sc-for>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px;">
+
+      <sc-if value="{{ showReport }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeup .3s ease;">
+          <div style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--faint);margin-bottom:6px;">SONAR-RPT · generated from this conversation</div>
+          <div style="font-size:17px;font-weight:700;margin-bottom:4px;">Weekly Call Driver Report</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:16px;">Jul 20 – 26 · 1,198 calls · CX Operations</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px;">Summary</div>
+          <div style="font-size:12.5px;line-height:1.65;color:var(--text);margin-bottom:14px;">Billing disputes led volume at 34% (+22% WoW), tied to the Jul 18 invoice cycle. Sentiment held steady overall (3.2 avg) with one exception: <b>cancellation calls fell to 2.1</b>, down 0.4 week-over-week.</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px;">Key findings</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
+            <div style="display:flex;gap:8px;font-size:12.5px;line-height:1.55;"><div style="color:var(--faint);">–</div><div>4 retention agents sit ≥0.6 below the 2.9 team sentiment average.</div></div>
+            <div style="display:flex;gap:8px;font-size:12.5px;line-height:1.55;"><div style="color:var(--faint);">–</div><div>Lowest-scoring calls share a pattern: scripted retention offers delivered after firm cancel intent.</div></div>
+            <div style="display:flex;gap:8px;font-size:12.5px;line-height:1.55;"><div style="color:var(--faint);">–</div><div>Service-outage sentiment (2.6) is expected to recover as the Jul 21 incident ages out.</div></div>
+          </div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px;">Recommended actions</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+            <div style="display:flex;gap:8px;font-size:12.5px;line-height:1.55;"><div style="font-family:'IBM Plex Mono',monospace;color:var(--faint);">1.</div><div>Coach retention Tier 2 on offer timing (Webb, Ruiz priority).</div></div>
+            <div style="display:flex;gap:8px;font-size:12.5px;line-height:1.55;"><div style="font-family:'IBM Plex Mono',monospace;color:var(--faint);">2.</div><div>Flag invoice-cycle billing spikes to WFM for staffing.</div></div>
+            <div style="display:flex;gap:8px;font-size:12.5px;line-height:1.55;"><div style="font-family:'IBM Plex Mono',monospace;color:var(--faint);">3.</div><div>Re-run cancellation sentiment after coaching, W32.</div></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;text-align:center;padding:8px;border:1px solid var(--border2);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;" style-hover="background:var(--hover);">Export .md</div>
+            <div style="flex:1;text-align:center;padding:8px;border-radius:8px;background:var(--inv);color:var(--invtext);font-size:12px;font-weight:600;cursor:pointer;" style-hover="opacity:.88;">Save to library</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showCharts }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeup .3s ease;display:flex;flex-direction:column;gap:16px;">
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:14px;">Call volume by day</div>
+            <div style="display:flex;align-items:flex-end;gap:8px;height:110px;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:62%;background:var(--text);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Mon</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:88%;background:var(--text);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Tue</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:74%;background:var(--text);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Wed</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:67%;background:var(--text);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Thu</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:79%;background:var(--text);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Fri</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:34%;background:var(--muted);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Sat</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;"><div style="width:100%;height:22%;background:var(--muted);border-radius:4px 4px 2px 2px;"></div><div style="font-size:10px;color:var(--faint);">Sun</div></div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;">Sentiment by category</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ sentimentRows }}" as="sr" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:110px 1fr 40px;gap:10px;align-items:center;">
+                  <div style="font-size:12px;color:var(--muted);">{{ sr.label }}</div>
+                  <div style="height:7px;background:var(--track);border-radius:4px;overflow:hidden;"><div style="height:100%;border-radius:4px;background:{{ sr.color }};width:{{ sr.pct }};"></div></div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:{{ sr.color }};">{{ sr.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--faint);line-height:1.5;">Scale 1–5, scored per call by the labeling model. Team average 3.2.</div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:12px;">Driver mix WoW</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <sc-for list="{{ driverDelta }}" as="dd" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:110px;font-size:12px;color:var(--muted);">{{ dd.label }}</div>
+                  <div style="flex:1;font-family:'IBM Plex Mono',monospace;font-size:11.5px;">{{ dd.share }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:{{ dd.color }};">{{ dd.delta }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTranscripts }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeup .3s ease;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;">Marcus Webb — lowest sentiment</div>
+            <div style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--faint);">3 of 23 calls</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ transcripts }}" as="t" hint-placeholder-count="3">
+              <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+                <div onClick="{{ t.onToggle }}" style="padding:11px 13px;cursor:pointer;background:var(--panel2);" style-hover="background:var(--hover);">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px;">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;">{{ t.id }}</div>
+                    <div style="font-size:11px;color:var(--faint);">{{ t.meta }}</div>
+                    <div style="flex:1;"></div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--bad);">{{ t.score }}</div>
+                  </div>
+                  <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                    <sc-for list="{{ t.labels }}" as="lb" hint-placeholder-count="3">
+                      <div style="font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2.5px 7px;border-radius:10px;border:1px solid var(--border2);color:var(--muted);">{{ lb }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <sc-if value="{{ t.open }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:12px 13px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;">
+                    <sc-for list="{{ t.turns }}" as="tn" hint-placeholder-count="4">
+                      <div style="display:flex;gap:9px;">
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:{{ tn.color }};min-width:44px;padding-top:2px;">{{ tn.who }}</div>
+                        <div style="font-size:12px;line-height:1.55;color:var(--text);">{{ tn.text }}</div>
+                      </div>
+                    </sc-for>
+                    <div style="font-size:10.5px;color:var(--faint);font-family:'IBM Plex Mono',monospace;">… full transcript in Databricks · {{ t.id }}.wav</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showData }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeup .3s ease;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:700;">Retention agents — W30</div>
+            <div style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--faint);">sorted by sentiment ↑</div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1.5fr .7fr .7fr .8fr;padding:9px 12px;border-bottom:1px solid var(--border);gap:6px;background:var(--panel2);">
+              <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);">Agent</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:right;">Sent.</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:right;">Calls</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:right;">Esc. rate</div>
+            </div>
+            <sc-for list="{{ agentsTable }}" as="ag" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:1.5fr .7fr .7fr .8fr;padding:9px 12px;border-bottom:1px solid var(--border);gap:6px;align-items:center;" style-hover="background:var(--hover);">
+                <div style="font-size:12.5px;font-weight:500;">{{ ag.name }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:{{ ag.color }};font-weight:600;">{{ ag.sent }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--muted);">{{ ag.calls }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:right;color:var(--muted);">{{ ag.esc }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--faint);line-height:1.5;">Cancellation-labeled calls only. Escalation = supervisor transfer or callback request detected by labeler.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showSaved }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeup .3s ease;display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ savedItems }}" as="sv" hint-placeholder-count="3">
+            <div style="border:1px solid var(--border);border-radius:10px;padding:12px 13px;cursor:pointer;" style-hover="border-color:var(--border2);background:var(--hover);">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <div style="width:5px;height:5px;border-radius:50%;background:var(--text);"></div>
+                <div style="font-size:12.5px;font-weight:600;">{{ sv.title }}</div>
+              </div>
+              <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:6px;">{{ sv.desc }}</div>
+              <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--faint);">{{ sv.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ SETTINGS MODAL ============ -->
+  <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseSettings }}" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:flex;align-items:center;justify-content:center;animation:fadeup .2s ease;">
+      <div onClick="{{ stop }}" style="width:680px;max-width:92vw;height:480px;background:var(--panel);border:1px solid var(--border2);border-radius:14px;display:flex;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5);">
+        <div style="width:180px;border-right:1px solid var(--border);padding:14px 8px;display:flex;flex-direction:column;gap:2px;background:var(--panel2);">
+          <div style="padding:4px 10px 10px;font-size:14px;font-weight:700;">Settings</div>
+          <sc-for list="{{ settingsTabs }}" as="st" hint-placeholder-count="4">
+            <div onClick="{{ st.onClick }}" style="padding:7px 10px;border-radius:7px;font-size:12.5px;font-weight:{{ st.weight }};color:{{ st.color }};background:{{ st.bg }};cursor:pointer;" style-hover="color:var(--text);">{{ st.label }}</div>
+          </sc-for>
+          <div style="flex:1;"></div>
+          <div onClick="{{ onCloseSettings }}" style="padding:7px 10px;border-radius:7px;font-size:12.5px;color:var(--faint);cursor:pointer;" style-hover="color:var(--text);">← Close</div>
+        </div>
+        <div style="flex:1;padding:20px 22px;overflow-y:auto;">
+
+          <sc-if value="{{ setProfile }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:15px;font-weight:700;margin-bottom:16px;">Profile</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+              <div style="width:52px;height:52px;border-radius:50%;background:var(--raise);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;">JT</div>
+              <div>
+                <div style="font-size:14px;font-weight:600;">Jordan Tate</div>
+                <div style="font-size:12px;color:var(--muted);">jordan.tate@acmecx.com · QA Director</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div><div style="font-size:11px;font-weight:600;color:var(--faint);margin-bottom:5px;">DISPLAY NAME</div><input value="Jordan Tate" readOnly="{{ true }}" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:12.5px;outline:none;"></div>
+              <div><div style="font-size:11px;font-weight:600;color:var(--faint);margin-bottom:5px;">ROLE</div><input value="QA Director" readOnly="{{ true }}" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:12.5px;outline:none;"></div>
+              <div style="grid-column:1/-1;"><div style="font-size:11px;font-weight:600;color:var(--faint);margin-bottom:5px;">DEFAULT TIME WINDOW</div><input value="Trailing 7 days" readOnly="{{ true }}" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:12.5px;outline:none;"></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ setAppearance }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;font-weight:700;margin-bottom:16px;">Appearance</div>
+            <div style="font-size:11px;font-weight:600;color:var(--faint);margin-bottom:8px;">THEME</div>
+            <div style="display:flex;gap:10px;margin-bottom:20px;">
+              <div onClick="{{ setDark }}" style="flex:1;border:1.5px solid {{ darkBorder }};border-radius:10px;padding:12px;cursor:pointer;">
+                <div style="height:52px;border-radius:7px;background:#0a0a0c;border:1px solid #26262c;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:2px;"><div style="width:2px;height:8px;background:#fff;border-radius:1px;"></div><div style="width:2px;height:14px;background:#fff;border-radius:1px;"></div><div style="width:2px;height:10px;background:#fff;border-radius:1px;"></div></div>
+                <div style="font-size:12.5px;font-weight:600;">Dark <span style="color:var(--faint);font-weight:400;">· default</span></div>
+              </div>
+              <div onClick="{{ setLight }}" style="flex:1;border:1.5px solid {{ lightBorder }};border-radius:10px;padding:12px;cursor:pointer;">
+                <div style="height:52px;border-radius:7px;background:#fafafa;border:1px solid #ddd;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:2px;"><div style="width:2px;height:8px;background:#111;border-radius:1px;"></div><div style="width:2px;height:14px;background:#111;border-radius:1px;"></div><div style="width:2px;height:10px;background:#111;border-radius:1px;"></div></div>
+                <div style="font-size:12.5px;font-weight:600;">Light</div>
+              </div>
+            </div>
+            <sc-for list="{{ appearanceToggles }}" as="tg" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-size:12.5px;font-weight:600;">{{ tg.label }}</div><div style="font-size:11px;color:var(--faint);">{{ tg.sub }}</div></div>
+                <div onClick="{{ tg.onClick }}" style="width:34px;height:19px;border-radius:10px;background:{{ tg.bg }};position:relative;cursor:pointer;transition:background .15s;">
+                  <div style="position:absolute;top:2px;left:{{ tg.knob }};width:15px;height:15px;border-radius:50%;background:{{ tg.knobColor }};transition:left .15s;"></div>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+
+          <sc-if value="{{ setPipeline }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Data pipeline</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Databricks · sonar_prod workspace</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <sc-for list="{{ pipelineStages }}" as="ps" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:10px;padding:11px 13px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:{{ ps.dot }};"></div>
+                  <div style="flex:1;">
+                    <div style="font-size:12.5px;font-weight:600;">{{ ps.label }}</div>
+                    <div style="font-size:11px;color:var(--faint);">{{ ps.sub }}</div>
+                  </div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:{{ ps.statusColor }};">{{ ps.status }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:12px;font-size:11px;color:var(--faint);line-height:1.5;">WAV ingest runs on a 15-min trigger. Labeling batch completes ~40 min after call end.</div>
+          </sc-if>
+
+          <sc-if value="{{ setPrompts }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Labeling prompts</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Agreed prompt set · v14 · applied to every call</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ prompts }}" as="pr" hint-placeholder-count="4">
+                <div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px;" style-hover="border-color:var(--border2);">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                    <div style="font-size:12.5px;font-weight:600;flex:1;">{{ pr.label }}</div>
+                    <div style="font-size:9.5px;letter-spacing:.05em;padding:2px 7px;border-radius:9px;border:1px solid var(--border2);color:var(--muted);font-family:'IBM Plex Mono',monospace;">{{ pr.model }}</div>
+                  </div>
+                  <div style="font-size:11.5px;color:var(--muted);line-height:1.5;">{{ pr.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultTheme&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;dark&quot;, &quot;options&quot;: [&quot;dark&quot;, &quot;light&quot;], &quot;tsType&quot;: &quot;'dark' | 'light'&quot;, &quot;section&quot;: &quot;Appearance&quot;}, &quot;rightPaneOpen&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Layout&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const seeded = this.buildSeed();
+    this.state = {
+      theme: (props && props.defaultTheme) || 'dark',
+      convs: seeded.convs,
+      activeId: 'c1',
+      draft: '',
+      thinking: false,
+      thinkingLabel: '',
+      rightOpen: (props && props.rightPaneOpen) !== false,
+      activeTab: 'transcripts',
+      searchQ: '',
+      showSettings: false,
+      settingsTab: 'profile',
+      openTranscript: 'CALL-88214',
+      toggles: { mono: true, compactMsgs: false },
+    };
+    this.msgRef = React.createRef();
+  }
+  componentDidMount() { this.applyTheme(); }
+  componentDidUpdate() { document.documentElement.dataset.theme = this.state.theme; }
+  applyTheme() { document.documentElement.dataset.theme = this.state.theme; }
+  scrollDown() { setTimeout(() => { const el = this.msgRef.current; if (el) el.scrollTop = el.scrollHeight; }, 60); }
+
+  buildSeed() {
+    const V = 'var(--bad)', W = 'var(--warn)', G = 'var(--good)', M = "'IBM Plex Mono',monospace", S = "'IBM Plex Sans',sans-serif";
+    const openTab = (tab) => () => this.setState({ activeTab: tab, rightOpen: true });
+    const text = (t) => ({ isText: true, text: t });
+    const c1msgs = [
+      { isUser: true, text: 'What were the primary call drivers last week?' },
+      { isAssistant: true, blocks: [
+        text('Last week (Jul 20–26) the pipeline processed 1,198 calls. Five drivers accounted for 87% of volume:'),
+        { isBars: true, title: 'Call drivers · Jul 20–26', items: [
+          { label: 'Billing disputes', value: '412 · 34%', pct: '100%' },
+          { label: 'Service outages', value: '288 · 24%', pct: '70%' },
+          { label: 'Plan changes', value: '201 · 17%', pct: '49%' },
+          { label: 'Cancellations', value: '164 · 14%', pct: '40%' },
+          { label: 'Tech support', value: '133 · 11%', pct: '32%' } ]},
+        text('Billing disputes are up 22% vs. the prior week — concentrated on Jul 20–21, right after the Jul 18 invoice cycle.') ]},
+      { isUser: true, text: 'Was sentiment low in any of those categories?' },
+      { isAssistant: true, blocks: [
+        text('Two categories sit below the 3.2 team average:'),
+        { isTable: true, cols: '1.3fr .9fr .8fr .7fr', headers: ['Category', 'Avg sentiment', 'Δ WoW', 'Flag'],
+          rows: [
+            { cells: [{ text: 'Cancellations', font: S, color: 'var(--text)', weight: 500 }, { text: '2.1 / 5', font: M, color: V, weight: 600 }, { text: '−0.4', font: M, color: V, weight: 400 }, { text: 'LOW', font: M, color: V, weight: 600 }] },
+            { cells: [{ text: 'Service outages', font: S, color: 'var(--text)', weight: 500 }, { text: '2.6 / 5', font: M, color: W, weight: 600 }, { text: '−0.1', font: M, color: 'var(--muted)', weight: 400 }, { text: 'WATCH', font: M, color: W, weight: 600 }] },
+            { cells: [{ text: 'Billing disputes', font: S, color: 'var(--text)', weight: 500 }, { text: '3.1 / 5', font: M, color: 'var(--muted)', weight: 400 }, { text: '+0.2', font: M, color: G, weight: 400 }, { text: '—', font: M, color: 'var(--faint)', weight: 400 }] },
+            { cells: [{ text: 'Tech support', font: S, color: 'var(--text)', weight: 500 }, { text: '3.5 / 5', font: M, color: 'var(--muted)', weight: 400 }, { text: '+0.1', font: M, color: G, weight: 400 }, { text: '—', font: M, color: 'var(--faint)', weight: 400 }] },
+            { cells: [{ text: 'Plan changes', font: S, color: 'var(--text)', weight: 500 }, { text: '3.8 / 5', font: M, color: 'var(--muted)', weight: 400 }, { text: '0.0', font: M, color: 'var(--faint)', weight: 400 }, { text: '—', font: M, color: 'var(--faint)', weight: 400 }] } ]},
+        text('Cancellations is the clear outlier — down 0.4 week-over-week. Outage sentiment tracks the Jul 21 incident and should recover.') ]},
+      { isUser: true, text: 'Which agents had the lowest sentiment on cancellation calls?' },
+      { isAssistant: true, blocks: [
+        text('4 retention agents fall well below the 2.9 team average on cancellation-labeled calls:'),
+        { isAgents: true, items: [
+          { name: 'Marcus Webb', initials: 'MW', team: 'Retention · Tier 2', score: '1.8', scoreColor: V, calls: 23, onClick: openTab('data') },
+          { name: 'Dana Ruiz', initials: 'DR', team: 'Retention · Tier 2', score: '2.0', scoreColor: V, calls: 17, onClick: openTab('data') },
+          { name: 'Priya Nair', initials: 'PN', team: 'Retention · Tier 1', score: '2.2', scoreColor: W, calls: 31, onClick: openTab('data') },
+          { name: 'Tom Okafor', initials: 'TO', team: 'Retention · Tier 1', score: '2.3', scoreColor: W, calls: 12, onClick: openTab('data') } ]},
+        text('Marcus and Dana sit 0.9+ below average. Select an agent to open the full scorecard in the side panel.') ]},
+      { isUser: true, text: 'Pull the call bodies for Marcus Webb this week.' },
+      { isAssistant: true, blocks: [
+        text('Found 23 cancellation calls for Marcus Webb, Jul 20–26. I loaded the 3 lowest-sentiment transcripts into the panel →'),
+        { isChips: true, items: [
+          { label: 'CALL-88214', sub: 'Mon 10:42 · 1.2', onClick: openTab('transcripts') },
+          { label: 'CALL-88317', sub: 'Tue 14:05 · 1.5', onClick: openTab('transcripts') },
+          { label: 'CALL-88423', sub: 'Thu 09:18 · 1.7', onClick: openTab('transcripts') } ]},
+        text('Common pattern across all three: the retention offer is read verbatim after the customer states firm cancel intent, and the labeler flags "customer repeats request" in each.') ]} ];
+    const c2msgs = [
+      { isUser: true, text: 'Show QA outliers on refund calls yesterday.' },
+      { isAssistant: true, blocks: [ text('12 refund calls scored ≥2 QA deviations yesterday. Biggest cluster: missing disclosure statement (7 calls, 4 agents, all on the new refund script v3). Want the agent list or the script diff?') ]} ];
+    const c3msgs = [
+      { isUser: true, text: 'Build a coaching list from last week\u2019s low-sentiment calls.' },
+      { isAssistant: true, blocks: [ text('Drafted a coaching list: 6 agents, 14 flagged calls, grouped by pattern (offer timing ×3, hold handling ×2, tone ×1). Saved to the library — open the Saved tab to review.') ]} ];
+    return { convs: {
+      c1: { title: 'Call drivers & sentiment — W30', sub: 'drivers · sentiment · Webb', when: 'today', pinned: false, messages: c1msgs },
+      c2: { title: 'QA outliers — refunds', sub: 'refund script v3 disclosures', when: 'yesterday', pinned: false, messages: c2msgs },
+      c3: { title: 'Agent coaching list', sub: '6 agents · 14 calls', when: 'yesterday', pinned: false, messages: c3msgs },
+      p1: { title: 'Weekly driver report', sub: 'recurring · Mondays 9am', when: 'pinned', pinned: true, messages: [] },
+      p2: { title: 'Cancellation deep-dive', sub: 'sentiment root causes', when: 'pinned', pinned: true, messages: [] },
+      w1: { title: 'Outage surge postmortem', sub: 'Jul 21 incident calls', when: 'week', pinned: false, messages: [] },
+      w2: { title: 'New-hire ramp check', sub: 'cohort C sentiment trend', when: 'week', pinned: false, messages: [] },
+    }};
+  }
+
+  send(textIn) {
+    const q = (textIn || this.state.draft).trim();
+    if (!q || this.state.thinking) return;
+    const convs = { ...this.state.convs };
+    let id = this.state.activeId;
+    if (!id) {
+      id = 'n' + Date.now();
+      convs[id] = { title: q.length > 34 ? q.slice(0, 34) + '…' : q, sub: 'just now', when: 'today', pinned: false, messages: [] };
+    }
+    convs[id] = { ...convs[id], messages: [...convs[id].messages, { isUser: true, text: q }] };
+    this.setState({ convs, activeId: id, draft: '', thinking: true, thinkingLabel: 'Querying labeled calls…' });
+    this.scrollDown();
+    setTimeout(() => this.setState({ thinkingLabel: 'Scoring 1,198 transcripts…' }), 900);
+    setTimeout(() => this.streamReply(id), 1700);
+  }
+
+  streamReply(id) {
+    const full = 'Here\u2019s what I found in the labeled data. Across the current 7-day window the pattern holds: volume concentrates early-week, and sentiment dips track the cancellation queue rather than any single agent shift. I\u2019ve summarized the relevant slice below — open the side panel for the full breakdown.';
+    const convs = { ...this.state.convs };
+    const msg = { isAssistant: true, blocks: [{ isText: true, text: '', cursor: true }] };
+    convs[id] = { ...convs[id], messages: [...convs[id].messages, msg] };
+    this.setState({ convs, thinking: false });
+    let i = 0;
+    const timer = setInterval(() => {
+      i = Math.min(full.length, i + 3);
+      msg.blocks[0].text = full.slice(0, i);
+      if (i >= full.length) {
+        clearInterval(timer);
+        msg.blocks[0].cursor = false;
+        msg.blocks.push({ isBars: true, title: 'Relevant slice · current window', items: [
+          { label: 'Matching calls', value: '164', pct: '100%' },
+          { label: 'Below 3.0 sent.', value: '61 · 37%', pct: '37%' },
+          { label: 'Escalated', value: '19 · 12%', pct: '12%' } ]});
+      }
+      this.forceUpdate();
+      const el = this.msgRef.current; if (el) el.scrollTop = el.scrollHeight;
+    }, 24);
+  }
+
+  renderVals() {
+    const s = this.state, V = 'var(--bad)', W = 'var(--warn)', G = 'var(--good)';
+    const q = s.searchQ.toLowerCase();
+    const entries = Object.entries(s.convs).filter(([, c]) => !q || c.title.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q));
+    const item = ([id, c]) => ({
+      title: c.title, sub: c.sub,
+      bg: id === s.activeId ? 'var(--hover)' : 'transparent',
+      dot: id === s.activeId ? 'var(--text)' : 'var(--border2)',
+      weight: id === s.activeId ? 600 : 400,
+      onClick: () => this.setState({ activeId: id }),
+    });
+    const groups = [
+      { label: 'Pinned', items: entries.filter(([, c]) => c.pinned).map(item) },
+      { label: 'Today', items: entries.filter(([, c]) => !c.pinned && c.when === 'today').map(item) },
+      { label: 'Yesterday', items: entries.filter(([, c]) => !c.pinned && c.when === 'yesterday').map(item) },
+      { label: 'Earlier this week', items: entries.filter(([, c]) => !c.pinned && c.when === 'week').map(item) },
+    ].filter(g => g.items.length);
+    const conv = s.activeId ? s.convs[s.activeId] : null;
+    const messages = conv ? conv.messages : [];
+    const tabDefs = [['report', 'Report'], ['charts', 'Charts'], ['transcripts', 'Transcripts'], ['data', 'Data'], ['saved', 'Saved']];
+    const tabs = tabDefs.map(([k, label]) => ({
+      label, weight: s.activeTab === k ? 600 : 400,
+      color: s.activeTab === k ? 'var(--text)' : 'var(--muted)',
+      bg: s.activeTab === k ? 'var(--raise)' : 'transparent',
+      onClick: () => this.setState({ activeTab: k }),
+    }));
+    const stDefs = [['profile', 'Profile'], ['appearance', 'Appearance'], ['pipeline', 'Data pipeline'], ['prompts', 'Labeling prompts']];
+    const settingsTabs = stDefs.map(([k, label]) => ({
+      label, weight: s.settingsTab === k ? 600 : 400,
+      color: s.settingsTab === k ? 'var(--text)' : 'var(--muted)',
+      bg: s.settingsTab === k ? 'var(--raise)' : 'transparent',
+      onClick: () => this.setState({ settingsTab: k }),
+    }));
+    const mkToggle = (key, label, sub) => ({
+      label, sub,
+      bg: s.toggles[key] ? 'var(--inv)' : 'var(--track)',
+      knob: s.toggles[key] ? '17px' : '2px',
+      knobColor: s.toggles[key] ? 'var(--invtext)' : 'var(--muted)',
+      onClick: () => this.setState({ toggles: { ...s.toggles, [key]: !s.toggles[key] } }),
+    });
+    const transcripts = [
+      { id: 'CALL-88214', meta: 'Mon 10:42 · 11m 04s', score: '1.2', labels: ['Cancellation', 'Repeat request', 'Offer after intent'], turns: [
+        { who: 'CUST', color: 'var(--muted)', text: 'I\u2019d like to cancel my service, effective today please.' },
+        { who: 'WEBB', color: V, text: 'Before we do that, I\u2019m required to share that we have a fantastic loyalty offer — 20% off for 12 months plus a free…' },
+        { who: 'CUST', color: 'var(--muted)', text: 'I\u2019ve already decided. I just want to cancel. This is the third time I\u2019m asking.' },
+        { who: 'WEBB', color: V, text: 'I understand, but let me just finish walking you through the offer details, because I think you\u2019ll find—' },
+        { who: 'CUST', color: 'var(--muted)', text: 'Please just process the cancellation. Or transfer me to someone who will.' } ]},
+      { id: 'CALL-88317', meta: 'Tue 14:05 · 8m 41s', score: '1.5', labels: ['Cancellation', 'Hold > 3 min', 'Offer after intent'], turns: [
+        { who: 'CUST', color: 'var(--muted)', text: 'Hi, I\u2019m calling to cancel before my renewal on Friday.' },
+        { who: 'WEBB', color: V, text: 'Let me place you on a brief hold while I pull up retention options.' },
+        { who: 'CUST', color: 'var(--muted)', text: '(after 4m 12s hold) Hello? I didn\u2019t ask for options, I asked to cancel.' } ]},
+      { id: 'CALL-88423', meta: 'Thu 09:18 · 6m 22s', score: '1.7', labels: ['Cancellation', 'Talk-over', 'Script deviation'], turns: [
+        { who: 'CUST', color: 'var(--muted)', text: 'I\u2019m moving somewhere you don\u2019t have coverage, so I need to cancel.' },
+        { who: 'WEBB', color: V, text: 'Have you checked our coverage map recently? We\u2019ve expanded quite a bit—' },
+        { who: 'CUST', color: 'var(--muted)', text: 'Yes. You don\u2019t cover it. I checked before calling.' } ]},
+    ].map(t => ({ ...t, open: s.openTranscript === t.id, onToggle: () => this.setState({ openTranscript: s.openTranscript === t.id ? null : t.id }) }));
+    return {
+      workspace: 'Acme CX · Production',
+      searchQ: s.searchQ,
+      onSearch: (e) => this.setState({ searchQ: e.target.value }),
+      onWorkspace: () => {},
+      onNewChat: () => this.setState({ activeId: null, thinking: false }),
+      convGroups: groups,
+      convTitle: conv ? conv.title : 'New conversation',
+      messages, thinking: s.thinking, thinkingLabel: s.thinkingLabel,
+      showEmpty: !conv || messages.length === 0,
+      suggestions: [
+        'Primary call drivers last week',
+        'Categories with low sentiment',
+        'Agents below sentiment average',
+        'Escalation rate trend, 30 days',
+      ].map(label => ({ label, onClick: () => this.send(label) })),
+      draft: s.draft,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      onKey: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } },
+      onSend: () => this.send(),
+      msgRef: this.msgRef,
+      rightOpen: s.rightOpen,
+      onToggleRight: () => this.setState({ rightOpen: !s.rightOpen }),
+      panelFill: s.rightOpen ? 'var(--muted)' : 'transparent',
+      tabs,
+      showReport: s.activeTab === 'report', showCharts: s.activeTab === 'charts',
+      showTranscripts: s.activeTab === 'transcripts', showData: s.activeTab === 'data', showSaved: s.activeTab === 'saved',
+      sentimentRows: [
+        { label: 'Plan changes', value: '3.8', pct: '76%', color: G },
+        { label: 'Tech support', value: '3.5', pct: '70%', color: G },
+        { label: 'Billing', value: '3.1', pct: '62%', color: 'var(--text)' },
+        { label: 'Outages', value: '2.6', pct: '52%', color: W },
+        { label: 'Cancellations', value: '2.1', pct: '42%', color: V },
+      ],
+      driverDelta: [
+        { label: 'Billing disputes', share: '34%', delta: '+22%', color: V },
+        { label: 'Service outages', share: '24%', delta: '+9%', color: W },
+        { label: 'Plan changes', share: '17%', delta: '−2%', color: 'var(--muted)' },
+        { label: 'Cancellations', share: '14%', delta: '+4%', color: 'var(--muted)' },
+        { label: 'Tech support', share: '11%', delta: '−6%', color: G },
+      ],
+      transcripts,
+      agentsTable: [
+        { name: 'Marcus Webb', sent: '1.8', calls: 23, esc: '26%', color: V },
+        { name: 'Dana Ruiz', sent: '2.0', calls: 17, esc: '18%', color: V },
+        { name: 'Priya Nair', sent: '2.2', calls: 31, esc: '13%', color: W },
+        { name: 'Tom Okafor', sent: '2.3', calls: 12, esc: '17%', color: W },
+        { name: 'Lena Park', sent: '2.9', calls: 26, esc: '8%', color: 'var(--text)' },
+        { name: 'Sam Adeyemi', sent: '3.1', calls: 19, esc: '6%', color: 'var(--text)' },
+        { name: 'Rosa Delgado', sent: '3.4', calls: 22, esc: '5%', color: G },
+        { name: 'Chris Vaughn', sent: '3.6', calls: 15, esc: '4%', color: G },
+      ],
+      savedItems: [
+        { title: 'Weekly driver report — W30', desc: 'Auto-generated Monday summary: drivers, sentiment deltas, agent flags.', meta: 'Saved Jul 27 · report · recurring' },
+        { title: 'Cancellation coaching list', desc: '6 agents, 14 flagged calls grouped by failure pattern.', meta: 'Saved Jul 26 · list · shared with Team Leads' },
+        { title: 'Invoice-cycle billing spike', desc: 'Chart pack: billing dispute volume vs. invoice dates, 8 weeks.', meta: 'Saved Jul 22 · charts' },
+      ],
+      onTheme: () => this.setState({ theme: s.theme === 'dark' ? 'light' : 'dark' }),
+      themeLabel: s.theme === 'dark' ? 'Dark' : 'Light',
+      themeDot: s.theme === 'dark' ? 'var(--text)' : '#f0c26a',
+      onSettings: () => this.setState({ showSettings: true }),
+      onCloseSettings: () => this.setState({ showSettings: false }),
+      showSettings: s.showSettings,
+      stop: (e) => e.stopPropagation(),
+      settingsTabs,
+      setProfile: s.settingsTab === 'profile', setAppearance: s.settingsTab === 'appearance',
+      setPipeline: s.settingsTab === 'pipeline', setPrompts: s.settingsTab === 'prompts',
+      setDark: () => this.setState({ theme: 'dark' }),
+      setLight: () => this.setState({ theme: 'light' }),
+      darkBorder: s.theme === 'dark' ? 'var(--text)' : 'var(--border)',
+      lightBorder: s.theme === 'light' ? 'var(--text)' : 'var(--border)',
+      appearanceToggles: [
+        mkToggle('mono', 'Monospace metrics', 'Use IBM Plex Mono for numbers and IDs'),
+        mkToggle('compactMsgs', 'Compact messages', 'Tighter spacing in the chat thread'),
+      ],
+      pipelineStages: [
+        { label: 'WAV ingest', sub: 'S3 → Autoloader · 15-min trigger', dot: G, status: 'HEALTHY', statusColor: G },
+        { label: 'Transcription', sub: 'Whisper batch · GPU cluster', dot: G, status: 'HEALTHY', statusColor: G },
+        { label: 'Labeling — Claude Opus', sub: 'Prompt set v14 · 12 labels per call', dot: G, status: 'RUNNING', statusColor: G },
+        { label: 'Gold tables', sub: 'sonar.gold.calls_labeled · Delta', dot: W, status: 'LAG 12m', statusColor: W },
+      ],
+      prompts: [
+        { label: 'Call driver classification', model: 'OPUS', sub: 'Assigns one primary + up to two secondary drivers from the agreed taxonomy (14 categories).' },
+        { label: 'Sentiment scoring', model: 'OPUS', sub: 'Customer sentiment 1–5 with turning-point detection and per-segment scores.' },
+        { label: 'Escalation & risk flags', model: 'SONNET', sub: 'Supervisor requests, churn signals, compliance phrases, repeat-contact prediction.' },
+        { label: 'QA rubric check', model: 'SONNET', sub: 'Greeting, disclosure, hold etiquette, resolution confirmation — pass/fail per item.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
