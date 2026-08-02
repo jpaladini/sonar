@@ -1,0 +1,55 @@
+# Deploys the Sonar bundle to the dev target on every merge to dev.
+#
+# Pipeline variables (set on the pipeline in ADO):
+#   DATABRICKS_HOST  — https://dbc-49fa4800-f5f0.cloud.databricks.com
+#   DATABRICKS_TOKEN — PAT for the workspace (mark secret)
+trigger:
+  branches:
+    include:
+      - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: Use Node 20
+
+  - script: |
+      set -euo pipefail
+      cd frontend
+      npm ci
+      npm run build
+    displayName: Build frontend (sanity — built output is committed)
+
+  - script: |
+      set -euo pipefail
+      pip install -r requirements-dev.txt
+      python -m pytest tests/ -q
+    displayName: Run BFF tests
+
+  - script: |
+      set -euo pipefail
+      curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+      databricks version
+    displayName: Install Databricks CLI
+
+  - script: databricks bundle validate -t dev
+    displayName: Validate bundle
+    env:
+      DATABRICKS_HOST: $(DATABRICKS_HOST)
+      DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+
+  - script: databricks bundle deploy -t dev
+    displayName: Deploy bundle (dev)
+    env:
+      DATABRICKS_HOST: $(DATABRICKS_HOST)
+      DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+
+  - script: databricks bundle run sonar -t dev
+    displayName: Start app
+    env:
+      DATABRICKS_HOST: $(DATABRICKS_HOST)
+      DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
