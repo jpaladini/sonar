@@ -207,7 +207,7 @@ if (STATIC_DIR / "index.html").is_file():
         app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"),
                   name="assets")
 
-    @app.get("/{path:path}", include_in_schema=False)
+    @app.get("/{path:path}", include_in_schema=False, response_model=None)
     def spa(path: str) -> FileResponse | JSONResponse:
         if path.startswith("api/"):
             return JSONResponse({"detail": "not found"}, status_code=404)

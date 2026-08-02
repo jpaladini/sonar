@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens — design/README.md. data-theme="light" on <html> flips the
+   palette; every component color goes through these variables. */
+:root {
+  --bg: #09090b;
+  --panel: #0d0d10;
+  --panel2: #131317;
+  --raise: #17171c;
+  --border: #1e1e24;
+  --border2: #2b2b33;
+  --text: #f2f2f4;
+  --muted: #8e8e98;
+  --faint: #5c5c66;
+  --inv: #ffffff;
+  --invtext: #0a0a0c;
+  --hover: rgba(255, 255, 255, 0.05);
+  --good: #6ee7a0;
+  --warn: #eec87e;
+  --bad: #f38585;
+  --track: #1d1d23;
+}
+
+html[data-theme='light'] {
+  --bg: #f5f5f6;
+  --panel: #ffffff;
+  --panel2: #f0f0f2;
+  --raise: #e9e9ec;
+  --border: #e4e4e8;
+  --border2: #d3d3da;
+  --text: #16161a;
+  --muted: #6d6d78;
+  --faint: #9d9da6;
+  --inv: #131316;
+  --invtext: #ffffff;
+  --hover: rgba(0, 0, 0, 0.045);
+  --good: #1a9e57;
+  --warn: #a5720e;
+  --bad: #c94343;
+  --track: #e6e6ea;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  /* The design uses browser-default line boxes; Tailwind preflight's 1.5
+     inflates every row and drifts the layout vertically. */
+  line-height: normal;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--text);
+}
+
+::selection {
+  background: var(--text);
+  color: var(--bg);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
