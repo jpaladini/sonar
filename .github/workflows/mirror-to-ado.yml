@@ -7,6 +7,7 @@ name: Mirror to ADO
 on:
   push:
     branches: ['**']
+  workflow_dispatch: {}
 
 concurrency:
   group: mirror-${{ github.ref }}
